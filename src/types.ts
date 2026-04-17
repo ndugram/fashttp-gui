@@ -22,3 +22,14 @@ export interface HttpResponse {
   body: string
   elapsed_ms: number
 }
+
+export interface HistoryEntry {
+  id: string
+  timestamp: number
+  method: HttpMethod
+  url: string
+  headers: Header[]
+  body: string
+  status?: number
+  elapsed_ms?: number
+}

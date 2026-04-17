@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "fasthttp-gui",
+  "productName": "FastHTTP",
   "version": "0.1.0",
   "identifier": "com.fasthttp.gui",
   "build": {
