@@ -90,11 +90,23 @@ jobs:
       - name: Build
         run: npm run tauri build -- --target ${{ matrix.target }}
 
+      - name: Collect installers
+        shell: bash
+        run: |
+          mkdir -p dist
+          find src-tauri/target/${{ matrix.target }}/release/bundle \
+            -maxdepth 2 \
+            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" \
+               -o -name "*.dmg" -o -name "*.msi" -o -name "*.exe" \) \
+            -exec cp {} dist/ \;
+          echo "Collected files:"
+          ls dist/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: fasthttp-gui-${{ matrix.target }}
-          path: src-tauri/target/${{ matrix.target }}/release/bundle/**/*
+          path: dist/
           if-no-files-found: ignore
 
   release:
