@@ -6,3 +6,23 @@ dist
 
 src-tauri/target
 src-tauri/gen
+.DS_Store
+.idea
+.vscode
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.swn
+*.sln
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.cache
+*.pdb
+*.obj
+*.obj
+*.dll
+*.exe       
