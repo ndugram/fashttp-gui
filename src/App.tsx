@@ -4,7 +4,12 @@ import { RequestPanel } from './components/RequestPanel'
 import { ResponsePanel } from './components/ResponsePanel'
 import { CodePanel } from './components/CodePanel'
 import { HistoryPanel } from './components/HistoryPanel'
-import type { RequestConfig, HttpResponse, ActiveTab, HistoryEntry } from './types'
+import { TopBar } from './components/TopBar'
+import { Sidebar } from './components/Sidebar'
+import { ProfileDropdown } from './components/ProfileDropdown'
+import { SettingsPanel } from './components/SettingsPanel'
+import { FolderOpen, Layers } from 'lucide-react'
+import type { RequestConfig, HttpResponse, ActiveTab, HistoryEntry, SideSection } from './types'
 
 const HISTORY_KEY = 'fasthttp-history'
 const MAX_HISTORY = 100
@@ -22,8 +27,12 @@ export function App() {
   const [response, setResponse] = useState<HttpResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showHistory, setShowHistory] = useState(true)
   const [activeHistoryId, setActiveHistoryId] = useState<string | undefined>()
+
+  const [sideSection, setSideSection] = useState<SideSection>('history')
+  const [showProfile, setShowProfile] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
     try {
@@ -101,34 +110,58 @@ export function App() {
     localStorage.removeItem(HISTORY_KEY)
   }
 
+  function toggleSection(section: SideSection) {
+    setSideSection(prev => (prev === section ? null : section))
+  }
+
+  function toggleProfile() {
+    setShowProfile(p => !p)
+    setShowSettings(false)
+  }
+
+  function toggleSettings() {
+    setShowSettings(p => !p)
+    setShowProfile(false)
+  }
+
   return (
     <div className="app">
-      <header className="titlebar">
-        <button
-          className={`history-toggle-btn${showHistory ? ' active' : ''}`}
-          onClick={() => setShowHistory(v => !v)}
-          title={showHistory ? 'Hide history' : 'Show history'}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <line x1="9" y1="3" x2="9" y2="21" />
-          </svg>
-        </button>
-        <span className="titlebar-logo">FastHTTP</span>
-        <span className="titlebar-subtitle">GUI Client</span>
-        {error && (
-          <span className="titlebar-error">{error}</span>
-        )}
-      </header>
+      <TopBar
+        onProfileClick={toggleProfile}
+        onSettingsClick={toggleSettings}
+        profileActive={showProfile}
+        settingsActive={showSettings}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        history={history}
+        onLoadEntry={handleLoadEntry}
+        error={error}
+      />
 
       <div className="workspace">
-        <div className={`history-sidebar${showHistory ? '' : ' collapsed'}`}>
-          <HistoryPanel
-            entries={history}
-            activeId={activeHistoryId}
-            onLoad={handleLoadEntry}
-            onClear={handleClearHistory}
-          />
+        <Sidebar active={sideSection} onToggle={toggleSection} />
+
+        <div className={`sidebar-panel${sideSection ? ' open' : ''}`}>
+          {sideSection === 'history' && (
+            <HistoryPanel
+              entries={history}
+              activeId={activeHistoryId}
+              onLoad={handleLoadEntry}
+              onClear={handleClearHistory}
+            />
+          )}
+          {sideSection === 'collections' && (
+            <div className="placeholder-panel">
+              <FolderOpen size={32} strokeWidth={1} />
+              <span>Collections coming soon</span>
+            </div>
+          )}
+          {sideSection === 'environments' && (
+            <div className="placeholder-panel">
+              <Layers size={32} strokeWidth={1} />
+              <span>Environments coming soon</span>
+            </div>
+          )}
         </div>
 
         <RequestPanel
@@ -145,6 +178,13 @@ export function App() {
           <CodePanel config={config} />
         </div>
       </div>
+
+      {showProfile && (
+        <ProfileDropdown onClose={() => setShowProfile(false)} />
+      )}
+      {showSettings && (
+        <SettingsPanel onClose={() => setShowSettings(false)} />
+      )}
     </div>
   )
 }

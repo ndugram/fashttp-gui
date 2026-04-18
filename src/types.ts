@@ -1,6 +1,8 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
-export type ActiveTab = 'headers' | 'body'
+export type ActiveTab = 'headers' | 'body' | 'params'
+
+export type SideSection = 'history' | 'collections' | 'environments' | null
 
 export interface Header {
   id: string

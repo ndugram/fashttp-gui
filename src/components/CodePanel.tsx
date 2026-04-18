@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Copy, Check, RefreshCw } from 'lucide-react'
 import type { RequestConfig } from '../types'
 import { generateCode } from '../codegen'
 
@@ -54,22 +55,26 @@ export function CodePanel({ config }: Props) {
     <div className="code-section">
       <div className="code-header">
         <div className="code-header-left">
-          <span className="code-label">Code Generator</span>
+          <span className="code-label">Code</span>
           <span className="code-lang-badge">Python · FastHTTP</span>
         </div>
         <div className="code-actions">
           <button
-            className={`regen-btn ${regenerating ? 'regenerating' : ''}`}
+            className={`regen-btn${regenerating ? ' regenerating' : ''}`}
             onClick={handleRegenerate}
             title="Regenerate"
           >
-            ↺
+            <RefreshCw size={13} strokeWidth={1.75} />
           </button>
-          <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-            {copied ? '✓ Copied' : 'Copy'}
+          <button className={`copy-btn${copied ? ' copied' : ''}`} onClick={handleCopy}>
+            {copied
+              ? <><Check size={11} strokeWidth={2.5} /> Copied</>
+              : <><Copy size={11} strokeWidth={1.75} /> Copy</>
+            }
           </button>
         </div>
       </div>
+
       <div className={`code-block${regenerating ? ' code-regenerating' : ''}`}>
         <pre
           className="code-content"

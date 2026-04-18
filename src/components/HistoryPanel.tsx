@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2, X } from 'lucide-react'
 import type { HistoryEntry } from '../types'
 
 interface Props {
@@ -52,10 +53,6 @@ export function HistoryPanel({ entries, activeId, onLoad, onClear }: Props) {
       )
     : entries
 
-  function handleClear() {
-    if (window.confirm('Clear all request history?')) onClear()
-  }
-
   return (
     <div className="history-panel">
       <div className="history-header">
@@ -66,8 +63,12 @@ export function HistoryPanel({ entries, activeId, onLoad, onClear }: Props) {
           )}
         </div>
         {entries.length > 0 && (
-          <button className="history-clear-btn" onClick={handleClear}>
-            Clear
+          <button
+            className="history-clear-btn"
+            onClick={() => { if (window.confirm('Clear all request history?')) onClear() }}
+            title="Clear history"
+          >
+            <Trash2 size={12} strokeWidth={1.75} />
           </button>
         )}
       </div>
@@ -77,14 +78,14 @@ export function HistoryPanel({ entries, activeId, onLoad, onClear }: Props) {
           <input
             className="history-search-input"
             type="text"
-            placeholder="Search..."
+            placeholder="Search…"
             value={query}
             onChange={e => setQuery(e.target.value)}
             spellCheck={false}
           />
           {query && (
             <button className="history-search-x" onClick={() => setQuery('')}>
-              ×
+              <X size={11} />
             </button>
           )}
         </div>

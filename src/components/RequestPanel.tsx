@@ -1,4 +1,5 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
+import { Plus, X } from 'lucide-react'
 import type { RequestConfig, HttpMethod, Header, ActiveTab } from '../types'
 
 interface Props {
@@ -20,15 +21,11 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
   }, [])
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      onSend()
-    }
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onSend()
   }
 
   function updateHeader(id: string, patch: Partial<Header>) {
-    onConfigChange({
-      headers: config.headers.map(h => (h.id === id ? { ...h, ...patch } : h)),
-    })
+    onConfigChange({ headers: config.headers.map(h => (h.id === id ? { ...h, ...patch } : h)) })
   }
 
   function deleteHeader(id: string) {
@@ -36,17 +33,26 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
   }
 
   function addHeader() {
-    const id = crypto.randomUUID()
-    onConfigChange({ headers: [...config.headers, { id, key: '', value: '', enabled: true }] })
+    onConfigChange({
+      headers: [...config.headers, { id: crypto.randomUUID(), key: '', value: '', enabled: true }],
+    })
   }
 
-  const methodClass = `method-${config.method.toLowerCase()}`
+  const activeHeaderCount = config.headers.filter(h => h.enabled && h.key).length
+
+  const urlParams = useMemo(() => {
+    try {
+      return Array.from(new URL(config.url).searchParams.entries())
+    } catch {
+      return []
+    }
+  }, [config.url])
 
   return (
     <div className="left-panel">
       <div className="request-bar">
         <select
-          className={`method-select ${methodClass}`}
+          className={`method-select method-${config.method.toLowerCase()}`}
           value={config.method}
           onChange={e => onConfigChange({ method: e.target.value as HttpMethod })}
         >
@@ -54,6 +60,7 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
             <option key={m} value={m}>{m}</option>
           ))}
         </select>
+
         <input
           ref={urlRef}
           className="url-input"
@@ -64,6 +71,7 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
           onKeyDown={handleKeyDown}
           spellCheck={false}
         />
+
         <button
           className="send-button"
           onClick={onSend}
@@ -75,29 +83,36 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
 
       <div className="tabs">
         <button
-          className={`tab ${activeTab === 'headers' ? 'active' : ''}`}
+          className={`tab${activeTab === 'headers' ? ' active' : ''}`}
           onClick={() => onTabChange('headers')}
         >
           Headers
-          {config.headers.filter(h => h.enabled && h.key).length > 0 && (
-            <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontSize: 10 }}>
-              {config.headers.filter(h => h.enabled && h.key).length}
-            </span>
+          {activeHeaderCount > 0 && (
+            <span className="tab-badge">{activeHeaderCount}</span>
           )}
         </button>
+
         <button
-          className={`tab ${activeTab === 'body' ? 'active' : ''}`}
+          className={`tab${activeTab === 'body' ? ' active' : ''}`}
           onClick={() => onTabChange('body')}
         >
           Body
-          {config.body.trim() && (
-            <span style={{ marginLeft: 6, color: 'var(--accent)', fontSize: 10 }}>●</span>
+          {config.body.trim() && <span className="tab-dot" />}
+        </button>
+
+        <button
+          className={`tab${activeTab === 'params' ? ' active' : ''}`}
+          onClick={() => onTabChange('params')}
+        >
+          Params
+          {urlParams.length > 0 && (
+            <span className="tab-badge">{urlParams.length}</span>
           )}
         </button>
       </div>
 
       <div className="tab-content">
-        {activeTab === 'headers' ? (
+        {activeTab === 'headers' && (
           <>
             <div className="headers-list">
               {config.headers.map(header => (
@@ -109,7 +124,7 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
                     onChange={e => updateHeader(header.id, { enabled: e.target.checked })}
                   />
                   <input
-                    className={`header-input ${!header.enabled ? 'disabled' : ''}`}
+                    className={`header-input${!header.enabled ? ' disabled' : ''}`}
                     type="text"
                     placeholder="Header name"
                     value={header.key}
@@ -118,7 +133,7 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
                     spellCheck={false}
                   />
                   <input
-                    className={`header-input ${!header.enabled ? 'disabled' : ''}`}
+                    className={`header-input${!header.enabled ? ' disabled' : ''}`}
                     type="text"
                     placeholder="Value"
                     value={header.value}
@@ -127,16 +142,19 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
                     spellCheck={false}
                   />
                   <button className="header-delete" onClick={() => deleteHeader(header.id)}>
-                    ×
+                    <X size={12} strokeWidth={2.5} />
                   </button>
                 </div>
               ))}
             </div>
             <button className="add-header-btn" onClick={addHeader}>
-              + Add Header
+              <Plus size={13} strokeWidth={2} />
+              Add Header
             </button>
           </>
-        ) : (
+        )}
+
+        {activeTab === 'body' && (
           <textarea
             className="body-editor"
             placeholder={'{\n  "key": "value"\n}'}
@@ -144,6 +162,23 @@ export function RequestPanel({ config, activeTab, loading, onConfigChange, onTab
             onChange={e => onConfigChange({ body: e.target.value })}
             spellCheck={false}
           />
+        )}
+
+        {activeTab === 'params' && (
+          <div className="params-list">
+            {urlParams.length === 0 ? (
+              <div className="params-empty">
+                <span>No query parameters in URL</span>
+              </div>
+            ) : (
+              urlParams.map(([key, value], i) => (
+                <div key={i} className="param-row">
+                  <span className="param-key">{key}</span>
+                  <span className="param-value">{value || '—'}</span>
+                </div>
+              ))
+            )}
+          </div>
         )}
       </div>
     </div>
