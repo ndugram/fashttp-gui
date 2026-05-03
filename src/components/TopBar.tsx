@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Search, User, Settings, X } from 'lucide-react'
 import type { HistoryEntry } from '../types'
+import type React from 'react'
 
 const METHOD_COLOR: Record<string, string> = {
   GET:    'var(--green)',
@@ -20,6 +21,7 @@ interface Props {
   history: HistoryEntry[]
   onLoadEntry: (entry: HistoryEntry) => void
   error: string | null
+  profileBtnRef: React.RefObject<HTMLButtonElement>
 }
 
 export function TopBar({
@@ -32,6 +34,7 @@ export function TopBar({
   history,
   onLoadEntry,
   error,
+  profileBtnRef,
 }: Props) {
   const [focused, setFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -111,6 +114,7 @@ export function TopBar({
         {error && <span className="topbar-error">{error}</span>}
 
         <button
+          ref={profileBtnRef}
           className={`topbar-btn${profileActive ? ' active' : ''}`}
           onClick={onProfileClick}
           title="Profile"

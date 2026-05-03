@@ -6,6 +6,7 @@ import {
 
 interface Props {
   onClose: () => void
+  onClearHistory: () => void
 }
 
 interface Settings {
@@ -33,7 +34,7 @@ const NAV: { id: Section; label: string }[] = [
   { id: 'data',     label: 'Data' },
 ]
 
-export function SettingsPanel({ onClose }: Props) {
+export function SettingsPanel({ onClose, onClearHistory }: Props) {
   const [settings, setSettings] = useState<Settings>(() => {
     try {
       const s = localStorage.getItem('fasthttp-settings')
@@ -154,7 +155,7 @@ export function SettingsPanel({ onClose }: Props) {
                     className="settings-action-btn danger"
                     onClick={() => {
                       if (window.confirm('Clear all history?')) {
-                        localStorage.removeItem('fasthttp-history')
+                        onClearHistory()
                       }
                     }}
                   >

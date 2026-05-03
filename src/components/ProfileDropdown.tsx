@@ -3,18 +3,21 @@ import { Monitor, Package, Cpu, Download, Trash2, RefreshCw, X } from 'lucide-re
 
 interface Props {
   onClose: () => void
+  triggerRef: React.RefObject<HTMLButtonElement>
 }
 
-export function ProfileDropdown({ onClose }: Props) {
+export function ProfileDropdown({ onClose, triggerRef }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
+      const target = e.target as Node
+      if (triggerRef.current?.contains(target)) return
+      if (ref.current && !ref.current.contains(target)) onClose()
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [onClose])
+  }, [onClose, triggerRef])
 
   const platform = navigator.platform || 'Unknown'
 

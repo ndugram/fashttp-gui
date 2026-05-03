@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { RequestPanel } from './components/RequestPanel'
 import { ResponsePanel } from './components/ResponsePanel'
@@ -33,6 +33,7 @@ export function App() {
   const [showProfile, setShowProfile] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const profileBtnRef = useRef<HTMLButtonElement>(null)
 
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
     try {
@@ -110,7 +111,7 @@ export function App() {
     localStorage.removeItem(HISTORY_KEY)
   }
 
-  function toggleSection(section: SideSection) {
+  function toggleSection(section: Exclude<SideSection, null>) {
     setSideSection(prev => (prev === section ? null : section))
   }
 
@@ -136,6 +137,7 @@ export function App() {
         history={history}
         onLoadEntry={handleLoadEntry}
         error={error}
+        profileBtnRef={profileBtnRef}
       />
 
       <div className="workspace">
@@ -180,10 +182,10 @@ export function App() {
       </div>
 
       {showProfile && (
-        <ProfileDropdown onClose={() => setShowProfile(false)} />
+        <ProfileDropdown onClose={() => setShowProfile(false)} triggerRef={profileBtnRef} />
       )}
       {showSettings && (
-        <SettingsPanel onClose={() => setShowSettings(false)} />
+        <SettingsPanel onClose={() => setShowSettings(false)} onClearHistory={handleClearHistory} />
       )}
     </div>
   )

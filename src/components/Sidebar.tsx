@@ -1,9 +1,11 @@
 import { Clock, FolderOpen, Layers } from 'lucide-react'
 import type { SideSection } from '../types'
 
+type NonNullSection = Exclude<SideSection, null>
+
 interface Props {
   active: SideSection
-  onToggle: (section: SideSection) => void
+  onToggle: (section: NonNullSection) => void
 }
 
 const items = [
@@ -19,7 +21,7 @@ export function Sidebar({ active, onToggle }: Props) {
         <button
           key={id}
           className={`rail-btn${active === id ? ' active' : ''}`}
-          onClick={() => onToggle(active === id ? null : id)}
+          onClick={() => onToggle(id)}
           title={label}
           aria-label={label}
         >
